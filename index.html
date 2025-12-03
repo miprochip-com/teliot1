@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Telemetría TTN – Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Dashboard TTN</h1>
+    </header>
+
+    <main>
+      <section id="login-section">
+        <h2>Login</h2>
+        <form id="login-form">
+          <label for="username">Usuario</label>
+          <input type="text" id="username" required />
+
+          <label for="password">Contraseña</label>
+          <input type="password" id="password" required />
+
+          <button type="submit">Entrar</button>
+          <p id="login-error" class="error"></p>
+        </form>
+      </section>
+
+      <section id="dashboard-section" class="hidden">
+        <div class="toolbar">
+          <h2>Telemetría en vivo</h2>
+          <button id="logout-btn">Cerrar sesión</button>
+        </div>
+
+        <section class="panel">
+          <h3>Gráfica de temperatura</h3>
+          <canvas id="telemetry-chart"></canvas>
+        </section>
+
+        <section class="panel">
+          <h3>Últimos mensajes</h3>
+          <table id="telemetry-table">
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Device ID</th>
+                <th>Payload</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
