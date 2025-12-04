@@ -2,73 +2,58 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Telemetría Teliot1</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <header class="header">
     <div class="header-title">
-      <h1>Telemetría Teliot1</h1>
-      <p class="subtitle">
-        Datos enviados desde TTN &rarr; Node-RED &rarr; GitHub Pages
-      </p>
+      <h1>Telemetría Teliot1 v2 PRUEBA</h1>
+      <p class="subtitle">Datos enviados desde Teliot1 → TTN → GitHub Pages</p>
     </div>
+
     <div class="header-status">
-      <span id="connection-status" class="badge badge-gray">
-        Estado: esperando datos…
-      </span>
-      <button id="refresh-btn" class="btn">
-        Recargar ahora
-      </button>
+      <span id="connection-status" class="badge badge-gray">Estado: esperando datos…</span>
+
+      <button id="refresh-btn" class="btn">Recargar ahora</button>
+
+      <!-- Botón CSV -->
+      <button id="download-csv" class="btn">Descargar CSV</button>
     </div>
   </header>
 
   <main class="main">
-    <!-- Panel principal de medidas -->
+
+    <!-- Panel principal -->
     <section class="card">
       <h2>Medidas actuales</h2>
+
       <div class="grid grid-4">
         <div class="metric">
           <div class="metric-label">Temperatura</div>
-          <div class="metric-value">
-            <span id="temperature">--</span>
-            <span class="metric-unit">°C</span>
-          </div>
+          <div class="metric-value"><span id="temperature">--</span><span class="metric-unit">°C</span></div>
         </div>
 
         <div class="metric">
           <div class="metric-label">Humedad</div>
-          <div class="metric-value">
-            <span id="humidity">--</span>
-            <span class="metric-unit">%</span>
-          </div>
+          <div class="metric-value"><span id="humidity">--</span><span class="metric-unit">%</span></div>
         </div>
 
         <div class="metric">
           <div class="metric-label">Batería (Vbat)</div>
-          <div class="metric-value">
-            <span id="vbat">--</span>
-            <span class="metric-unit">V</span>
-          </div>
+          <div class="metric-value"><span id="vbat">--</span><span class="metric-unit">V</span></div>
         </div>
 
         <div class="metric">
           <div class="metric-label">Panel solar (Vsolar)</div>
-          <div class="metric-value">
-            <span id="vsolar">--</span>
-            <span class="metric-unit">V</span>
-          </div>
+          <div class="metric-value"><span id="vsolar">--</span><span class="metric-unit">V</span></div>
         </div>
 
         <div class="metric">
           <div class="metric-label">Luz (LDR)</div>
-          <div class="metric-value">
-            <span id="ldr">--</span>
-          </div>
+          <div class="metric-value"><span id="ldr">--</span></div>
         </div>
       </div>
     </section>
@@ -77,6 +62,7 @@
     <section class="card">
       <h2>Alarmas</h2>
       <div class="grid grid-4">
+
         <div class="alarm-item" id="alarm_temp_high">
           <div class="alarm-label">Temperatura alta</div>
           <span class="badge badge-gray">Sin datos</span>
@@ -99,7 +85,7 @@
       </div>
     </section>
 
-    <!-- Información de timestamp -->
+    <!-- Timestamps -->
     <section class="card">
       <h2>Información de muestra</h2>
       <div class="info-row">
@@ -114,13 +100,13 @@
       </div>
     </section>
 
-    <!-- Log simple -->
+    <!-- Log -->
     <section class="card">
       <h2>Log de eventos</h2>
       <div id="log" class="log"></div>
     </section>
 
-    <!-- NUEVO: histórico temperatura / humedad -->
+    <!-- Gráficas -->
     <section class="card">
       <h2>Histórico de temperatura y humedad</h2>
       <div class="chart-wrapper">
@@ -128,27 +114,22 @@
       </div>
     </section>
 
-    <!-- NUEVO: histórico Vbat / Vsolar / LDR -->
     <section class="card">
       <h2>Histórico de tensiones y luz</h2>
       <div class="chart-wrapper">
         <canvas id="chart-power-light"></canvas>
       </div>
     </section>
+
   </main>
 
   <footer class="footer">
-    <span>Teliot1 · miprochip</span>
-    <span class="dot">•</span>
-    <span>
-      Datos desde TTN a través de Node-RED y GitHub Pages
-    </span>
+    <span>Teliot1 · miprochip</span> <span class="dot">•</span>
+    <span>Datos desde TTN mediante Node-RED y GitHub Pages</span>
   </footer>
 
-  <!-- Librería de gráficos -->
-  
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Lógica de la página -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
+
