@@ -396,3 +396,11 @@ body {
 .header-status .btn {
   flex-shrink: 0;
 }
+
+/* === Enlace del footer bien visible en amarillo === */
+
+.footer a {
+  color: #ffd700 !important;   /* amarillo dorado */
+  text-decoration: underline;
+  font-weight: 600;
+}
