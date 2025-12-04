@@ -366,3 +366,9 @@ body {
 .log::-webkit-scrollbar-track {
   background: transparent;
 }
+
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 280px;
+}

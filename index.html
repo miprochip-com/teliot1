@@ -119,6 +119,22 @@
       <h2>Log de eventos</h2>
       <div id="log" class="log"></div>
     </section>
+
+    <!-- NUEVO: histórico temperatura / humedad -->
+    <section class="card">
+      <h2>Histórico de temperatura y humedad</h2>
+      <div class="chart-wrapper">
+        <canvas id="chart-temp-hum"></canvas>
+      </div>
+    </section>
+
+    <!-- NUEVO: histórico Vbat / Vsolar / LDR -->
+    <section class="card">
+      <h2>Histórico de tensiones y luz</h2>
+      <div class="chart-wrapper">
+        <canvas id="chart-power-light"></canvas>
+      </div>
+    </section>
   </main>
 
   <footer class="footer">
@@ -129,6 +145,9 @@
     </span>
   </footer>
 
+  <!-- Librería de gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lógica de la página -->
   <script src="app.js"></script>
 </body>
 </html>
