@@ -1,132 +1,207 @@
-const REFRESH_INTERVAL_MS = 30000; // 30s
-let charts = {};
+// Configuración
+const DATA_URL = "data.json"; // mismo directorio que index.html
+const REFRESH_MS = 60_000; // 60s
 
-const lastUpdateSpan = document.getElementById('last-update');
-const refreshBtn = document.getElementById('refresh-btn');
+const el = (id) => document.getElementById(id);
 
-refreshBtn.addEventListener('click', () => {
-  loadData(true);
-});
+function log(message) {
+  const logContainer = el("log");
+  if (!logContainer) return;
 
-async function loadData(manual = false) {
-  try {
-    if (!manual) {
-      lastUpdateSpan.textContent = 'Actualizando...';
-    }
+  const time = new Date().toLocaleTimeString("es-ES", {
+    hour12: false,
+  });
 
-    const res = await fetch('data.json?_=' + Date.now());
-    if (!res.ok) {
-      console.error('No se pudo cargar data.json', res.status);
-      lastUpdateSpan.textContent = 'Error cargando data.json';
-      return;
-    }
+  const entry = document.createElement("div");
+  entry.className = "log-entry";
 
-    const data = await res.json();
-    const entries = Array.isArray(data.entries) ? data.entries : [];
+  const spanTime = document.createElement("span");
+  spanTime.className = "log-entry-time";
+  spanTime.textContent = `[${time}]`;
 
-    renderTable(entries);
-    renderCharts(entries);
+  const spanMsg = document.createElement("span");
+  spanMsg.className = "log-entry-msg";
+  spanMsg.textContent = message;
 
-    const updatedText = data.updated_at
-      ? new Date(data.updated_at).toLocaleString()
-      : new Date().toLocaleString();
+  entry.appendChild(spanTime);
+  entry.appendChild(spanMsg);
 
-    lastUpdateSpan.textContent = 'Última actualización: ' + updatedText;
-  } catch (e) {
-    console.error('Error cargando data.json', e);
-    lastUpdateSpan.textContent = 'Error de conexión';
+  logContainer.prepend(entry); // entradas nuevas arriba
+
+  // limitar nº de líneas
+  const maxLines = 100;
+  while (logContainer.children.length > maxLines) {
+    logContainer.removeChild(logContainer.lastChild);
   }
 }
 
-// Convierte el timestamp_utc del decoded a un string legible
-function parseTimestampUtc(tsObj) {
-  if (!tsObj) return 'N/A';
-  const { year, month, day, hour, minute, second } = tsObj;
+function setConnectionStatus(type, text) {
+  const statusEl = el("connection-status");
+  if (!statusEl) return;
 
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${pad(day)}/${pad(month)}/${year} ${pad(hour)}:${pad(minute)}:${pad(second)}`;
+  statusEl.textContent = text;
+  statusEl.classList.remove(
+    "badge-gray",
+    "badge-ok",
+    "badge-danger",
+    "badge-warn"
+  );
+
+  switch (type) {
+    case "ok":
+      statusEl.classList.add("badge-ok");
+      break;
+    case "error":
+      statusEl.classList.add("badge-danger");
+      break;
+    case "warn":
+      statusEl.classList.add("badge-warn");
+      break;
+    default:
+      statusEl.classList.add("badge-gray");
+  }
 }
 
-// Tabla de últimos mensajes
-function renderTable(entries) {
-  const tbody = document.querySelector('#telemetry-table tbody');
-  tbody.innerHTML = '';
-
-  entries.slice().reverse().forEach((e) => {
-    const decoded = e.decoded || {};
-    const ts = parseTimestampUtc(decoded.timestamp_utc);
-    const dev = e.device_id || 'N/A';
-
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${ts}</td>
-      <td>${dev}</td>
-      <td><pre>${JSON.stringify(decoded, null, 2)}</pre></td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-// Construye todas las gráficas
-function renderCharts(entries) {
-  const sensors = [
-    { key: 'temperature', label: 'Temperatura (°C)' },
-    { key: 'humidity', label: 'Humedad (%)' },
-    { key: 'ldr', label: 'LDR' },
-    { key: 'vbat', label: 'VBAT (V)' },
-    { key: 'vsolar', label: 'VSOLAR (V)' }
-  ];
-
-  sensors.forEach((sensor) => {
-    const dataPoints = entries
-      .filter((e) => e.decoded && typeof e.decoded[sensor.key] !== 'undefined')
-      .map((e) => ({
-        x: parseTimestampUtc(e.decoded.timestamp_utc),
-        y: e.decoded[sensor.key]
-      }));
-
-    drawChart(sensor.key, sensor.label, dataPoints);
-  });
-}
-
-function drawChart(canvasId, label, dataPoints) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) {
-    console.warn('No se encontró canvas con id', canvasId);
-    return;
+function formatTimestampUtc(ts) {
+  if (
+    !ts ||
+    typeof ts.year !== "number" ||
+    typeof ts.month !== "number" ||
+    typeof ts.day !== "number"
+  ) {
+    return "--";
   }
 
-  const ctx = canvas.getContext('2d');
+  const pad = (n) => String(n).padStart(2, "0");
 
-  if (!charts[canvasId]) {
-    charts[canvasId] = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: dataPoints.map((p) => p.x),
-        datasets: [
-          {
-            label,
-            data: dataPoints.map((p) => p.y),
-            fill: false
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          x: { display: true },
-          y: { display: true }
-        }
-      }
-    });
+  const dateStr = `${ts.year}-${pad(ts.month)}-${pad(ts.day)}`;
+  const timeStr = `${pad(ts.hour ?? 0)}:${pad(
+    ts.minute ?? 0
+  )}:${pad(ts.second ?? 0)}`;
+
+  return `${dateStr} ${timeStr} UTC`;
+}
+
+function updateMetrics(data) {
+  // Valores básicos
+  el("temperature").textContent =
+    typeof data.temperature === "number"
+      ? data.temperature.toFixed(1)
+      : "--";
+
+  el("humidity").textContent =
+    typeof data.humidity === "number"
+      ? data.humidity.toFixed(1)
+      : "--";
+
+  el("vbat").textContent =
+    typeof data.vbat === "number"
+      ? data.vbat.toFixed(2)
+      : "--";
+
+  el("vsolar").textContent =
+    typeof data.vsolar === "number"
+      ? data.vsolar.toFixed(2)
+      : "--";
+
+  el("ldr").textContent =
+    data.ldr !== undefined ? String(data.ldr) : "--";
+
+  // Timestamp del nodo
+  el("timestamp-utc").textContent = formatTimestampUtc(
+    data.timestamp_utc
+  );
+
+  // Marca de tiempo local de actualización
+  el("last-refresh").textContent = new Date().toLocaleString(
+    "es-ES"
+  );
+
+  // Alarmas
+  setAlarm("alarm_temp_high", data.alarm_temp_high);
+  setAlarm("alarm_vbat_high", data.alarm_vbat_high);
+  setAlarm("alarm_vbat_low", data.alarm_vbat_low);
+  setAlarm("alarm_vsolar_low", data.alarm_vsolar_low);
+}
+
+function setAlarm(id, value) {
+  const container = el(id);
+  if (!container) return;
+
+  const badge =
+    container.querySelector(".badge") ||
+    document.createElement("span");
+
+  badge.className = "badge";
+
+  if (value === true) {
+    badge.classList.add("badge-danger");
+    badge.textContent = "ACTIVA";
+  } else if (value === false) {
+    badge.classList.add("badge-ok");
+    badge.textContent = "OK";
   } else {
-    charts[canvasId].data.labels = dataPoints.map((p) => p.x);
-    charts[canvasId].data.datasets[0].data = dataPoints.map((p) => p.y);
-    charts[canvasId].update();
+    badge.classList.add("badge-gray");
+    badge.textContent = "Sin datos";
+  }
+
+  if (!container.contains(badge)) {
+    container.appendChild(badge);
   }
 }
 
-// Carga inicial + refresco
-loadData();
-setInterval(() => loadData(), REFRESH_INTERVAL_MS);
+async function fetchData() {
+  const btn = el("refresh-btn");
+  if (btn) btn.disabled = true;
+
+  try {
+    setConnectionStatus("warn", "Actualizando…");
+
+    // cache-busting para que GitHub no sirva contenido cacheado
+    const url = `${DATA_URL}?_=${Date.now()}`;
+    const response = await fetch(url, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    updateMetrics(data);
+    setConnectionStatus("ok", "Datos recibidos");
+    log("Datos actualizados correctamente.");
+  } catch (err) {
+    console.error(err);
+    setConnectionStatus(
+      "error",
+      "Error leyendo data.json"
+    );
+    log("⚠️ Error al leer data.json: " + err.message);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function init() {
+  const btn = el("refresh-btn");
+  if (btn) {
+    btn.addEventListener("click", () => {
+      fetchData();
+    });
+  }
+
+  setConnectionStatus("warn", "Esperando primera lectura…");
+  log("Inicializando panel de telemetría…");
+
+  // Primera lectura inmediata
+  fetchData();
+
+  // Refresco periódico
+  setInterval(fetchData, REFRESH_MS);
+}
+
+document.addEventListener("DOMContentLoaded", init);
 

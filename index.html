@@ -2,58 +2,132 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Telemetría TTN – Dashboard</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>Telemetría Teliot1</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+  <header class="header">
+    <div class="header-title">
+      <h1>Telemetría Teliot1</h1>
+      <p class="subtitle">
+        Datos enviados desde TTN &rarr; Node-RED &rarr; GitHub Pages
+      </p>
+    </div>
+    <div class="header-status">
+      <span id="connection-status" class="badge badge-gray">
+        Estado: esperando datos…
+      </span>
+      <button id="refresh-btn" class="btn">
+        Recargar ahora
+      </button>
+    </div>
+  </header>
 
-  <div id="app">
-    <header>
-      <h1>Dashboard TTN</h1>
-      <p id="last-update" class="subtitle">Última actualización: --</p>
-    </header>
-
-    <main>
-      <section class="panel">
-        <h2>Gráficas</h2>
-
-        <h3>Temperatura (°C)</h3>
-        <canvas id="temperature"></canvas>
-
-        <h3>Humedad (%)</h3>
-        <canvas id="humidity"></canvas>
-
-        <h3>LDR</h3>
-        <canvas id="ldr"></canvas>
-
-        <h3>VBAT (V)</h3>
-        <canvas id="vbat"></canvas>
-
-        <h3>VSOLAR (V)</h3>
-        <canvas id="vsolar"></canvas>
-      </section>
-
-      <section class="panel">
-        <div class="panel-header">
-          <h2>Últimos mensajes</h2>
-          <button id="refresh-btn">Actualizar ahora</button>
+  <main class="main">
+    <!-- Panel principal de medidas -->
+    <section class="card">
+      <h2>Medidas actuales</h2>
+      <div class="grid grid-4">
+        <div class="metric">
+          <div class="metric-label">Temperatura</div>
+          <div class="metric-value">
+            <span id="temperature">--</span>
+            <span class="metric-unit">°C</span>
+          </div>
         </div>
-        <div class="table-container">
-          <table id="telemetry-table">
-            <thead>
-              <tr>
-                <th>Fecha/Hora</th>
-                <th>Device ID</th>
-                <th>Payload decodificado</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+
+        <div class="metric">
+          <div class="metric-label">Humedad</div>
+          <div class="metric-value">
+            <span id="humidity">--</span>
+            <span class="metric-unit">%</span>
+          </div>
         </div>
-      </section>
-    </main>
-  </div>
+
+        <div class="metric">
+          <div class="metric-label">Batería (Vbat)</div>
+          <div class="metric-value">
+            <span id="vbat">--</span>
+            <span class="metric-unit">V</span>
+          </div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-label">Panel solar (Vsolar)</div>
+          <div class="metric-value">
+            <span id="vsolar">--</span>
+            <span class="metric-unit">V</span>
+          </div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-label">Luz (LDR)</div>
+          <div class="metric-value">
+            <span id="ldr">--</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Alarmas -->
+    <section class="card">
+      <h2>Alarmas</h2>
+      <div class="grid grid-4">
+        <div class="alarm-item" id="alarm_temp_high">
+          <div class="alarm-label">Temperatura alta</div>
+          <span class="badge badge-gray">Sin datos</span>
+        </div>
+
+        <div class="alarm-item" id="alarm_vbat_high">
+          <div class="alarm-label">Vbat alta</div>
+          <span class="badge badge-gray">Sin datos</span>
+        </div>
+
+        <div class="alarm-item" id="alarm_vbat_low">
+          <div class="alarm-label">Vbat baja</div>
+          <span class="badge badge-gray">Sin datos</span>
+        </div>
+
+        <div class="alarm-item" id="alarm_vsolar_low">
+          <div class="alarm-label">Vsolar baja</div>
+          <span class="badge badge-gray">Sin datos</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Información de timestamp -->
+    <section class="card">
+      <h2>Información de muestra</h2>
+      <div class="info-row">
+        <div>
+          <div class="info-label">Timestamp UTC del nodo</div>
+          <div id="timestamp-utc" class="info-value">--</div>
+        </div>
+        <div>
+          <div class="info-label">Última actualización (navegador)</div>
+          <div id="last-refresh" class="info-value">--</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Log simple -->
+    <section class="card">
+      <h2>Log de eventos</h2>
+      <div id="log" class="log"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Teliot1 · miprochip</span>
+    <span class="dot">•</span>
+    <span>
+      Datos desde TTN a través de Node-RED y GitHub Pages
+    </span>
+  </footer>
 
   <script src="app.js"></script>
 </body>
