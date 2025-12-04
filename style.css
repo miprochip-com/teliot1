@@ -373,6 +373,14 @@ body {
   height: 280px;
 }
 
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;         /* 👉 para que los botones bajen a otra línea si no caben */
+}
+
+/* Que los botones no se encojan hasta desaparecer */
 .header-status .btn {
   flex-shrink: 0;
 }
