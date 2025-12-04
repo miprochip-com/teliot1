@@ -1,5 +1,24 @@
 {
   "samples": [
-    {}
+    {},
+    {
+      "alarm_temp_high": false,
+      "alarm_vbat_high": false,
+      "alarm_vbat_low": false,
+      "alarm_vsolar_low": false,
+      "humidity": 63.9,
+      "ldr": 9.1,
+      "temperature": 18.4,
+      "timestamp_utc": {
+        "day": 4,
+        "hour": 12,
+        "minute": 35,
+        "month": 12,
+        "second": 5,
+        "year": 2025
+      },
+      "vbat": 4.41,
+      "vsolar": 4.3
+    }
   ]
 }
