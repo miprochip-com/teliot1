@@ -372,3 +372,7 @@ body {
   width: 100%;
   height: 280px;
 }
+
+.header-status .btn {
+  flex-shrink: 0;
+}
