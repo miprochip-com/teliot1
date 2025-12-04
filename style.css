@@ -373,6 +373,18 @@ body {
   height: 280px;
 }
 
+.header {
+  display: flex;
+  align-items: center;        /* centra verticalmente título y botones */
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;            /* si no cabe, que baje a otra línea */
+}
+
+.header-title {
+  flex: 1 1 auto;
+}
+
 .header-status {
   display: flex;
   align-items: center;
