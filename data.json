@@ -1,0 +1,19 @@
+{
+  "alarm_temp_high": false,
+  "alarm_vbat_high": false,
+  "alarm_vbat_low": false,
+  "alarm_vsolar_low": false,
+  "humidity": 55.2,
+  "ldr": 123,
+  "temperature": 23.4,
+  "timestamp_utc": {
+    "day": 28,
+    "hour": 19,
+    "minute": 51,
+    "month": 11,
+    "second": 22,
+    "year": 2025
+  },
+  "vbat": 4.31,
+  "vsolar": 4.58
+}
