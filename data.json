@@ -1938,6 +1938,25 @@
       },
       "vbat": 4.44,
       "vsolar": 4.57
+    },
+    {
+      "alarm_temp_high": false,
+      "alarm_vbat_high": false,
+      "alarm_vbat_low": false,
+      "alarm_vsolar_low": false,
+      "humidity": 74.19,
+      "ldr": 7.76,
+      "temperature": 19.79,
+      "timestamp_utc": {
+        "day": 5,
+        "hour": 18,
+        "minute": 20,
+        "month": 12,
+        "second": 50,
+        "year": 2025
+      },
+      "vbat": 4.41,
+      "vsolar": 4.57
     }
   ]
 }
