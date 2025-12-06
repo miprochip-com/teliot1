@@ -39,15 +39,15 @@ body {
   flex-direction: column;
 }
 
-/* Layout principal */
-
+/* Layout principal - AHORA A PANTALLA COMPLETA */
 .main {
-  max-width: 1200px;
-  margin: 20px auto 60px auto;
-  padding: 0 16px 32px 16px;
+  width: 100%;
+  max-width: none;           /* sin límite de ancho */
+  margin: 16px 0 60px 0;     /* sin centrado horizontal */
+  padding: 0 16px 32px;      /* algo de padding lateral */
 }
 
-/* Footer superior */
+/* Footer superior / inferior (reutilizado) */
 
 .footer {
   width: 100%;
@@ -294,18 +294,17 @@ body {
   margin-right: 6px;
 }
 
-/* Chart wrapper */
-
+/* Chart wrapper - MÁS ALTO PARA APROVECHAR PANTALLA */
 .chart-wrapper {
   width: 100%;
-  height: 280px;
+  height: 380px;   /* subido desde ~280px */
 }
 
 /* Responsive */
 
 @media (max-width: 768px) {
   .main {
-    margin-top: 16px;
+    padding: 0 10px 24px;
   }
 
   .card {
