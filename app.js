@@ -6,6 +6,7 @@ const el = (id) => document.getElementById(id);
 // Graficas (Chart.js)
 let tempHumChart = null;
 let powerLightChart = null;
+let pressureChart = null;
 
 // Histórico en memoria para el CSV
 let lastSamples = [];
@@ -87,20 +88,50 @@ function setAlarm(id, value) {
 
 // ---------- Panel de medidas ----------
 function updateMetrics(sample) {
+  const temp = (typeof sample.temperature_c === "number")
+    ? sample.temperature_c
+    : (typeof sample.temperature === "number" ? sample.temperature : null);
+
+  const hum = (typeof sample.humidity_percent === "number")
+    ? sample.humidity_percent
+    : (typeof sample.humidity === "number" ? sample.humidity : null);
+
+  const vbat = (typeof sample.vbat_v === "number")
+    ? sample.vbat_v
+    : (typeof sample.vbat === "number" ? sample.vbat : null);
+
+  const vsolar = (typeof sample.vsolar_v === "number")
+    ? sample.vsolar_v
+    : (typeof sample.vsolar === "number" ? sample.vsolar : null);
+
+  const ldr = (typeof sample.ldr_percent === "number")
+    ? sample.ldr_percent
+    : (sample.ldr !== undefined ? sample.ldr : null);
+
+  const pressure = (typeof sample.pressure_hpa === "number")
+    ? sample.pressure_hpa
+    : (typeof sample.pressure === "number" ? sample.pressure : null);
+
   el("temperature").textContent =
-    typeof sample.temperature === "number" ? sample.temperature.toFixed(1) : "--";
+    temp !== null ? temp.toFixed(1) : "--";
 
   el("humidity").textContent =
-    typeof sample.humidity === "number" ? sample.humidity.toFixed(1) : "--";
+    hum !== null ? hum.toFixed(1) : "--";
 
   el("vbat").textContent =
-    typeof sample.vbat === "number" ? sample.vbat.toFixed(2) : "--";
+    vbat !== null ? vbat.toFixed(2) : "--";
 
   el("vsolar").textContent =
-    typeof sample.vsolar === "number" ? sample.vsolar.toFixed(2) : "--";
+    vsolar !== null ? vsolar.toFixed(2) : "--";
 
   el("ldr").textContent =
-    sample.ldr !== undefined ? String(sample.ldr) : "--";
+    ldr !== null ? String(ldr) : "--";
+
+  const pressureEl = el("pressure");
+  if (pressureEl) {
+    pressureEl.textContent =
+      pressure !== null ? pressure.toFixed(1) : "--";
+  }
 
   el("timestamp-utc").textContent = formatTimestampUtc(sample.timestamp_utc);
   el("last-refresh").textContent = new Date().toLocaleString("es-ES");
@@ -109,30 +140,76 @@ function updateMetrics(sample) {
   setAlarm("alarm_vbat_high", sample.alarm_vbat_high);
   setAlarm("alarm_vbat_low", sample.alarm_vbat_low);
   setAlarm("alarm_vsolar_low", sample.alarm_vsolar_low);
+  setAlarm("alarm_pressure_low", sample.alarm_pressure_low);
 }
 
 // ---------- Gráficas ----------
 function buildLabelFromTs(ts) {
   if (!ts) return "";
   const pad = (n) => String(n).padStart(2, "0");
-  return `${ts.year}-${pad(ts.month)}-${pad(ts.day)} ${pad(ts.hour ?? 0)}:${pad(
-    ts.minute ?? 0
-  )}`;
+  return `${ts.year}-${pad(ts.month)}-${pad(ts.day)} ${pad(
+    ts.hour ?? 0
+  )}:${pad(ts.minute ?? 0)}`;
 }
 
 function updateCharts(samples) {
-  // Filtra muestras vacías
-  const clean = samples.filter((s) => s && typeof s.temperature === "number");
+  if (!Array.isArray(samples) || !samples.length) return;
+
+  const clean = samples
+    .map((s) => {
+      if (!s) return null;
+
+      const temp = (typeof s.temperature_c === "number")
+        ? s.temperature_c
+        : (typeof s.temperature === "number" ? s.temperature : null);
+
+      const hum = (typeof s.humidity_percent === "number")
+        ? s.humidity_percent
+        : (typeof s.humidity === "number" ? s.humidity : null);
+
+      const vbat = (typeof s.vbat_v === "number")
+        ? s.vbat_v
+        : (typeof s.vbat === "number" ? s.vbat : null);
+
+      const vsolar = (typeof s.vsolar_v === "number")
+        ? s.vsolar_v
+        : (typeof s.vsolar === "number" ? s.vsolar : null);
+
+      const ldr = (typeof s.ldr_percent === "number")
+        ? s.ldr_percent
+        : (s.ldr !== undefined ? s.ldr : null);
+
+      const pressure = (typeof s.pressure_hpa === "number")
+        ? s.pressure_hpa
+        : (typeof s.pressure === "number" ? s.pressure : null);
+
+      if (temp === null && hum === null && vbat === null && vsolar === null && ldr === null && pressure === null) {
+        return null;
+      }
+
+      return {
+        ts: s.timestamp_utc,
+        temperature: temp,
+        humidity: hum,
+        vbat,
+        vsolar,
+        ldr,
+        pressure
+      };
+    })
+    .filter((s) => s && typeof s.temperature === "number");
+
   if (!clean.length) return;
 
-  const labels = clean.map((s) => buildLabelFromTs(s.timestamp_utc));
+  const labels = clean.map((s) => buildLabelFromTs(s.ts));
   const temps = clean.map((s) => s.temperature);
   const hums = clean.map((s) => s.humidity);
   const vbats = clean.map((s) => s.vbat);
   const vsolars = clean.map((s) => s.vsolar);
   const ldrs = clean.map((s) => s.ldr);
+  const pressures = clean.map((s) => s.pressure);
 
-  // --------------- Gráfico temperatura/humedad ------------------
+  // --------- Gráfico temperatura / humedad ----------
   const ctx1 = el("chart-temp-hum");
   if (ctx1) {
     if (tempHumChart) {
@@ -169,10 +246,7 @@ function updateCharts(samples) {
           plugins: { legend: { position: "bottom" } },
           scales: {
             x: { ticks: { maxRotation: 45 } },
-            yTemp: {
-              position: "left",
-              title: { display: true, text: "°C" },
-            },
+            yTemp: { position: "left", title: { display: true, text: "°C" } },
             yHum: {
               position: "right",
               title: { display: true, text: "%" },
@@ -184,7 +258,7 @@ function updateCharts(samples) {
     }
   }
 
-  // --------- Gráfico Vbat / Vsolar / LDR ------------------
+  // --------- Gráfico Vbat / Vsolar / LDR ----------
   const ctx2 = el("chart-power-light");
   if (ctx2) {
     if (powerLightChart) {
@@ -243,20 +317,57 @@ function updateCharts(samples) {
       });
     }
   }
+
+  // --------- Gráfico presión ----------
+  const ctx3 = el("chart-pressure");
+  if (ctx3) {
+    if (pressureChart) {
+      pressureChart.data.labels = labels;
+      pressureChart.data.datasets[0].data = pressures;
+      pressureChart.update();
+    } else {
+      pressureChart = new Chart(ctx3, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Presión (hPa)",
+              data: pressures,
+              tension: 0.25,
+              pointRadius: 2,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          plugins: { legend: { position: "bottom" } },
+          scales: {
+            x: { ticks: { maxRotation: 45 } },
+            y: {
+              title: { display: true, text: "hPa" },
+            },
+          },
+        },
+      });
+    }
+  }
 }
 
 // ---------- CSV ----------
 function formatTsForCsv(ts) {
   if (!ts || typeof ts.year !== "number") return "";
   const pad = (n) => String(n).padStart(2, "0");
-  return `${ts.year}-${pad(ts.month)}-${pad(ts.day)} ${pad(ts.hour ?? 0)}:${pad(
-    ts.minute ?? 0
-  )}:${pad(ts.second ?? 0)}`;
+  return `${ts.year}-${pad(ts.month)}-${pad(ts.day)} ${pad(
+    ts.hour ?? 0
+  )}:${pad(ts.minute ?? 0)}:${pad(ts.second ?? 0)}`;
 }
 
 function downloadCsv() {
   const clean = (lastSamples || []).filter(
-    (s) => s && typeof s.temperature === "number"
+    (s) => s && (typeof s.temperature_c === "number" || typeof s.temperature === "number")
   );
 
   if (!clean.length) {
@@ -264,7 +375,6 @@ function downloadCsv() {
     return;
   }
 
-  // Últimas 50 muestras
   const subset = clean.slice(-50);
 
   const headerText =
@@ -284,16 +394,18 @@ function downloadCsv() {
   const fechaLinea = `Fecha y hora del informe: ${fechaInforme}`;
 
   const headerCols = [
-    "timestamp_utc",
+    "timestamp",
     "temperature_c",
-    "humidity_pct",
+    "humidity_percent",
+    "pressure_hpa",
     "vbat_v",
     "vsolar_v",
-    "ldr",
+    "ldr_percent",
     "alarm_temp_high",
     "alarm_vbat_high",
     "alarm_vbat_low",
     "alarm_vsolar_low",
+    "alarm_pressure_low",
   ];
 
   const lines = [];
@@ -303,17 +415,43 @@ function downloadCsv() {
   lines.push(headerCols.join(";"));
 
   for (const s of subset) {
+    const temp = (typeof s.temperature_c === "number")
+      ? s.temperature_c
+      : (typeof s.temperature === "number" ? s.temperature : "");
+
+    const hum = (typeof s.humidity_percent === "number")
+      ? s.humidity_percent
+      : (typeof s.humidity === "number" ? s.humidity : "");
+
+    const vbat = (typeof s.vbat_v === "number")
+      ? s.vbat_v
+      : (typeof s.vbat === "number" ? s.vbat : "");
+
+    const vsolar = (typeof s.vsolar_v === "number")
+      ? s.vsolar_v
+      : (typeof s.vsolar === "number" ? s.vsolar : "");
+
+    const ldr = (typeof s.ldr_percent === "number")
+      ? s.ldr_percent
+      : (s.ldr !== undefined ? s.ldr : "");
+
+    const pressure = (typeof s.pressure_hpa === "number")
+      ? s.pressure_hpa
+      : (typeof s.pressure === "number" ? s.pressure : "");
+
     const row = [
       formatTsForCsv(s.timestamp_utc),
-      s.temperature ?? "",
-      s.humidity ?? "",
-      s.vbat ?? "",
-      s.vsolar ?? "",
-      s.ldr ?? "",
+      temp,
+      hum,
+      pressure,
+      vbat,
+      vsolar,
+      ldr,
       s.alarm_temp_high ? 1 : 0,
       s.alarm_vbat_high ? 1 : 0,
       s.alarm_vbat_low ? 1 : 0,
       s.alarm_vsolar_low ? 1 : 0,
+      s.alarm_pressure_low ? 1 : 0,
     ].join(";");
 
     lines.push(row);
@@ -356,6 +494,27 @@ async function fetchData() {
 
     if (!samples.length) throw new Error("data.json vacío");
 
+    // Asegurarnos de que cada muestra tiene timestamp_utc calculado si hace falta
+    samples = samples.map((s) => {
+      if (!s) return s;
+      if (
+        !s.timestamp_utc &&
+        typeof s.year === "number" &&
+        typeof s.month === "number" &&
+        typeof s.day === "number"
+      ) {
+        s.timestamp_utc = {
+          year: s.year,
+          month: s.month,
+          day: s.day,
+          hour: s.hour ?? 0,
+          minute: s.minute ?? 0,
+          second: s.second ?? 0,
+        };
+      }
+      return s;
+    });
+
     lastSamples = samples;
 
     const latest = samples[samples.length - 1];
@@ -375,7 +534,7 @@ async function fetchData() {
 
 // ---------- Inicialización ----------
 function init() {
- const btn = el("refresh-btn");
+  const btn = el("refresh-btn");
   if (btn) btn.addEventListener("click", fetchData);
 
   const btnCsv = el("download-csv");
@@ -389,5 +548,3 @@ function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
-
-
