@@ -188,6 +188,40 @@
       "minute": 7,
       "second": 34,
       "timestamp_iso": "2025-12-07T03:07:34.000Z"
+    },
+    {
+      "temperature_c": 19.91,
+      "temperature": 19.91,
+      "humidity_percent": 68.97,
+      "humidity": 68.97,
+      "vbat_v": 4.01,
+      "vbat": 4.01,
+      "vsolar_v": 0,
+      "vsolar": 0,
+      "ldr_percent": 4.29,
+      "ldr": 4.29,
+      "pressure_hpa": 1018.7,
+      "alarm_flags": 8,
+      "alarm_temp_high": false,
+      "alarm_vbat_high": false,
+      "alarm_vbat_low": false,
+      "alarm_vsolar_low": true,
+      "alarm_pressure_low": false,
+      "timestamp_utc": {
+        "year": 2025,
+        "month": 12,
+        "day": 7,
+        "hour": 4,
+        "minute": 8,
+        "second": 57
+      },
+      "year": 2025,
+      "month": 12,
+      "day": 7,
+      "hour": 4,
+      "minute": 8,
+      "second": 57,
+      "timestamp_iso": "2025-12-07T04:08:57.000Z"
     }
   ]
 }
