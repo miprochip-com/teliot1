@@ -378,7 +378,7 @@ function downloadCsv() {
   const subset = clean.slice(-50);
 
   const headerText =
-    "Informe Teliot1 en ubicación :MA-AX_4567. Informe y web desarrollado por https://www.miprochip.com";
+    "Informe Teliot1 en ubicacion :MA-AX_4567. Informe y web desarrollado por https://www.miprochip.com";
 
   const now = new Date();
   const fechaInforme = now.toLocaleString("es-ES", {
