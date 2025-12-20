@@ -325,6 +325,10 @@ body {
     flex-direction: column;
     align-items: stretch;
   }
+@media (max-width: 480px) {
+  .metric-value { font-size: 1.25rem; }
+  .chart-wrapper { height: 300px; }
+}
 
   .header-status .btn,
   .header-status .badge {

@@ -52,12 +52,14 @@ function setConnectionStatus(type, text) {
   else statusEl.classList.add("badge-gray");
 }
 
-function formatTimestampUtc(ts) {
+// OJO: en tu flujo Node-RED guardas timestamp_utc como HORA LOCAL (no UTC)
+// Por eso NO añadimos "UTC" al final.
+function formatTimestamp(ts) {
   if (!ts || typeof ts.year !== "number") return "--";
   const pad = (n) => String(n).padStart(2, "0");
   return (
     `${ts.year}-${pad(ts.month)}-${pad(ts.day)} ` +
-    `${pad(ts.hour ?? 0)}:${pad(ts.minute ?? 0)}:${pad(ts.second ?? 0)} UTC`
+    `${pad(ts.hour ?? 0)}:${pad(ts.minute ?? 0)}:${pad(ts.second ?? 0)}`
   );
 }
 
@@ -65,9 +67,7 @@ function setAlarm(id, value) {
   const container = el(id);
   if (!container) return;
 
-  const badge =
-    container.querySelector(".badge") || document.createElement("span");
-
+  const badge = container.querySelector(".badge") || document.createElement("span");
   badge.className = "badge";
 
   if (value === true) {
@@ -81,59 +81,36 @@ function setAlarm(id, value) {
     badge.textContent = "Sin datos";
   }
 
-  if (!container.contains(badge)) {
-    container.appendChild(badge);
+  if (!container.contains(badge)) container.appendChild(badge);
+}
+
+// Helpers para soportar nombres nuevos/viejos
+function pickNumber(sample, keys) {
+  for (const k of keys) {
+    if (typeof sample[k] === "number" && !isNaN(sample[k])) return sample[k];
   }
+  return null;
 }
 
 // ---------- Panel de medidas ----------
 function updateMetrics(sample) {
-  const temp = (typeof sample.temperature_c === "number")
-    ? sample.temperature_c
-    : (typeof sample.temperature === "number" ? sample.temperature : null);
+  const temp = pickNumber(sample, ["temperature", "temperature_c"]);
+  const hum = pickNumber(sample, ["humidity", "humidity_percent"]);
+  const vbat = pickNumber(sample, ["vbat", "vbat_v"]);
+  const vsolar = pickNumber(sample, ["vsolar", "vsolar_v"]);
+  const ldr = pickNumber(sample, ["ldr", "ldr_percent"]);          // 0..100
+  const pressure = pickNumber(sample, ["pressure_at", "pressure_hpa", "pressure"]);
 
-  const hum = (typeof sample.humidity_percent === "number")
-    ? sample.humidity_percent
-    : (typeof sample.humidity === "number" ? sample.humidity : null);
-
-  const vbat = (typeof sample.vbat_v === "number")
-    ? sample.vbat_v
-    : (typeof sample.vbat === "number" ? sample.vbat : null);
-
-  const vsolar = (typeof sample.vsolar_v === "number")
-    ? sample.vsolar_v
-    : (typeof sample.vsolar === "number" ? sample.vsolar : null);
-
-  const ldr = (typeof sample.ldr_percent === "number")
-    ? sample.ldr_percent
-    : (sample.ldr !== undefined ? sample.ldr : null);
-
-  const pressure = (typeof sample.pressure_hpa === "number")
-    ? sample.pressure_hpa
-    : (typeof sample.pressure === "number" ? sample.pressure : null);
-
-  el("temperature").textContent =
-    temp !== null ? temp.toFixed(1) : "--";
-
-  el("humidity").textContent =
-    hum !== null ? hum.toFixed(1) : "--";
-
-  el("vbat").textContent =
-    vbat !== null ? vbat.toFixed(2) : "--";
-
-  el("vsolar").textContent =
-    vsolar !== null ? vsolar.toFixed(2) : "--";
-
-  el("ldr").textContent =
-    ldr !== null ? String(ldr) : "--";
+  el("temperature").textContent = temp !== null ? temp.toFixed(1) : "--";
+  el("humidity").textContent = hum !== null ? hum.toFixed(1) : "--";
+  el("vbat").textContent = vbat !== null ? vbat.toFixed(3) : "--";
+  el("vsolar").textContent = vsolar !== null ? vsolar.toFixed(3) : "--";
+  el("ldr").textContent = ldr !== null ? ldr.toFixed(1) : "--";
 
   const pressureEl = el("pressure");
-  if (pressureEl) {
-    pressureEl.textContent =
-      pressure !== null ? pressure.toFixed(1) : "--";
-  }
+  if (pressureEl) pressureEl.textContent = pressure !== null ? pressure.toFixed(1) : "--";
 
-  el("timestamp-utc").textContent = formatTimestampUtc(sample.timestamp_utc);
+  el("timestamp-utc").textContent = formatTimestamp(sample.timestamp_utc);
   el("last-refresh").textContent = new Date().toLocaleString("es-ES");
 
   setAlarm("alarm_temp_high", sample.alarm_temp_high);
@@ -147,9 +124,7 @@ function updateMetrics(sample) {
 function buildLabelFromTs(ts) {
   if (!ts) return "";
   const pad = (n) => String(n).padStart(2, "0");
-  return `${ts.year}-${pad(ts.month)}-${pad(ts.day)} ${pad(
-    ts.hour ?? 0
-  )}:${pad(ts.minute ?? 0)}`;
+  return `${ts.year}-${pad(ts.month)}-${pad(ts.day)} ${pad(ts.hour ?? 0)}:${pad(ts.minute ?? 0)}`;
 }
 
 function updateCharts(samples) {
@@ -159,45 +134,20 @@ function updateCharts(samples) {
     .map((s) => {
       if (!s) return null;
 
-      const temp = (typeof s.temperature_c === "number")
-        ? s.temperature_c
-        : (typeof s.temperature === "number" ? s.temperature : null);
+      const temperature = pickNumber(s, ["temperature", "temperature_c"]);
+      const humidity = pickNumber(s, ["humidity", "humidity_percent"]);
+      const vbat = pickNumber(s, ["vbat", "vbat_v"]);
+      const vsolar = pickNumber(s, ["vsolar", "vsolar_v"]);
+      const ldr = pickNumber(s, ["ldr", "ldr_percent"]);
+      const pressure = pickNumber(s, ["pressure_at", "pressure_hpa", "pressure"]);
 
-      const hum = (typeof s.humidity_percent === "number")
-        ? s.humidity_percent
-        : (typeof s.humidity === "number" ? s.humidity : null);
+      // no descartamos por humedad/otros, solo pedimos timestamp + temp al menos
+      if (!s.timestamp_utc || typeof s.timestamp_utc.year !== "number") return null;
+      if (temperature === null) return null;
 
-      const vbat = (typeof s.vbat_v === "number")
-        ? s.vbat_v
-        : (typeof s.vbat === "number" ? s.vbat : null);
-
-      const vsolar = (typeof s.vsolar_v === "number")
-        ? s.vsolar_v
-        : (typeof s.vsolar === "number" ? s.vsolar : null);
-
-      const ldr = (typeof s.ldr_percent === "number")
-        ? s.ldr_percent
-        : (s.ldr !== undefined ? s.ldr : null);
-
-      const pressure = (typeof s.pressure_hpa === "number")
-        ? s.pressure_hpa
-        : (typeof s.pressure === "number" ? s.pressure : null);
-
-      if (temp === null && hum === null && vbat === null && vsolar === null && ldr === null && pressure === null) {
-        return null;
-      }
-
-      return {
-        ts: s.timestamp_utc,
-        temperature: temp,
-        humidity: hum,
-        vbat,
-        vsolar,
-        ldr,
-        pressure
-      };
+      return { ts: s.timestamp_utc, temperature, humidity, vbat, vsolar, ldr, pressure };
     })
-    .filter((s) => s && typeof s.temperature === "number");
+    .filter(Boolean);
 
   if (!clean.length) return;
 
@@ -209,7 +159,7 @@ function updateCharts(samples) {
   const ldrs = clean.map((s) => s.ldr);
   const pressures = clean.map((s) => s.pressure);
 
-  // --------- Gráfico temperatura / humedad ----------
+  // Temp/Hum
   const ctx1 = el("chart-temp-hum");
   if (ctx1) {
     if (tempHumChart) {
@@ -223,20 +173,8 @@ function updateCharts(samples) {
         data: {
           labels,
           datasets: [
-            {
-              label: "Temperatura (°C)",
-              data: temps,
-              yAxisID: "yTemp",
-              tension: 0.25,
-              pointRadius: 2,
-            },
-            {
-              label: "Humedad (%)",
-              data: hums,
-              yAxisID: "yHum",
-              tension: 0.25,
-              pointRadius: 2,
-            },
+            { label: "Temperatura (°C)", data: temps, yAxisID: "yTemp", tension: 0.25, pointRadius: 2 },
+            { label: "Humedad (%)", data: hums, yAxisID: "yHum", tension: 0.25, pointRadius: 2 },
           ],
         },
         options: {
@@ -247,18 +185,14 @@ function updateCharts(samples) {
           scales: {
             x: { ticks: { maxRotation: 45 } },
             yTemp: { position: "left", title: { display: true, text: "°C" } },
-            yHum: {
-              position: "right",
-              title: { display: true, text: "%" },
-              grid: { drawOnChartArea: false },
-            },
+            yHum: { position: "right", title: { display: true, text: "%" }, grid: { drawOnChartArea: false } },
           },
         },
       });
     }
   }
 
-  // --------- Gráfico Vbat / Vsolar / LDR ----------
+  // Vbat/Vsolar/LDR
   const ctx2 = el("chart-power-light");
   if (ctx2) {
     if (powerLightChart) {
@@ -273,27 +207,9 @@ function updateCharts(samples) {
         data: {
           labels,
           datasets: [
-            {
-              label: "Vbat (V)",
-              data: vbats,
-              yAxisID: "yVolt",
-              tension: 0.25,
-              pointRadius: 2,
-            },
-            {
-              label: "Vsolar (V)",
-              data: vsolars,
-              yAxisID: "yVolt",
-              tension: 0.25,
-              pointRadius: 2,
-            },
-            {
-              label: "LDR",
-              data: ldrs,
-              yAxisID: "yLdr",
-              tension: 0.25,
-              pointRadius: 2,
-            },
+            { label: "Vbat (V)", data: vbats, yAxisID: "yVolt", tension: 0.25, pointRadius: 2 },
+            { label: "Vsolar (V)", data: vsolars, yAxisID: "yVolt", tension: 0.25, pointRadius: 2 },
+            { label: "Luz (%)", data: ldrs, yAxisID: "yLdr", tension: 0.25, pointRadius: 2 },
           ],
         },
         options: {
@@ -303,22 +219,15 @@ function updateCharts(samples) {
           plugins: { legend: { position: "bottom" } },
           scales: {
             x: { ticks: { maxRotation: 45 } },
-            yVolt: {
-              position: "left",
-              title: { display: true, text: "Voltios (V)" },
-            },
-            yLdr: {
-              position: "right",
-              title: { display: true, text: "LDR" },
-              grid: { drawOnChartArea: false },
-            },
+            yVolt: { position: "left", title: { display: true, text: "Voltios (V)" } },
+            yLdr: { position: "right", title: { display: true, text: "%" }, grid: { drawOnChartArea: false } },
           },
         },
       });
     }
   }
 
-  // --------- Gráfico presión ----------
+  // Presión
   const ctx3 = el("chart-pressure");
   if (ctx3) {
     if (pressureChart) {
@@ -328,28 +237,13 @@ function updateCharts(samples) {
     } else {
       pressureChart = new Chart(ctx3, {
         type: "line",
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "Presión (hPa)",
-              data: pressures,
-              tension: 0.25,
-              pointRadius: 2,
-            },
-          ],
-        },
+        data: { labels, datasets: [{ label: "Presión (hPa)", data: pressures, tension: 0.25, pointRadius: 2 }] },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           interaction: { mode: "index", intersect: false },
           plugins: { legend: { position: "bottom" } },
-          scales: {
-            x: { ticks: { maxRotation: 45 } },
-            y: {
-              title: { display: true, text: "hPa" },
-            },
-          },
+          scales: { x: { ticks: { maxRotation: 45 } }, y: { title: { display: true, text: "hPa" } } },
         },
       });
     }
@@ -357,17 +251,9 @@ function updateCharts(samples) {
 }
 
 // ---------- CSV ----------
-function formatTsForCsv(ts) {
-  if (!ts || typeof ts.year !== "number") return "";
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${ts.year}-${pad(ts.month)}-${pad(ts.day)} ${pad(
-    ts.hour ?? 0
-  )}:${pad(ts.minute ?? 0)}:${pad(ts.second ?? 0)}`;
-}
-
 function downloadCsv() {
   const clean = (lastSamples || []).filter(
-    (s) => s && (typeof s.temperature_c === "number" || typeof s.temperature === "number")
+    (s) => s && (typeof s.temperature === "number" || typeof s.temperature_c === "number")
   );
 
   if (!clean.length) {
@@ -378,7 +264,7 @@ function downloadCsv() {
   const subset = clean.slice(-50);
 
   const headerText =
-    "Informe Teliot1 en ubicacion :MA-AX_4567. Informe y web desarrollado por https://www.miprochip.com";
+    "Informe Teliot1 en ubicación desconocida. Informe y web desarrollado por http://www.miprochip.com";
 
   const now = new Date();
   const fechaInforme = now.toLocaleString("es-ES", {
@@ -391,16 +277,14 @@ function downloadCsv() {
     hour12: false,
   });
 
-  const fechaLinea = `Fecha y hora del informe: ${fechaInforme}`;
-
   const headerCols = [
     "timestamp",
-    "temperature_c",
-    "humidity_percent",
-    "pressure_hpa",
-    "vbat_v",
-    "vsolar_v",
-    "ldr_percent",
+    "temperature",
+    "humidity",
+    "pressure_at",
+    "vbat",
+    "vsolar",
+    "ldr",
     "alarm_temp_high",
     "alarm_vbat_high",
     "alarm_vbat_low",
@@ -410,43 +294,26 @@ function downloadCsv() {
 
   const lines = [];
   lines.push(headerText);
-  lines.push(fechaLinea);
+  lines.push(`Fecha y hora del informe: ${fechaInforme}`);
   lines.push("");
   lines.push(headerCols.join(";"));
 
   for (const s of subset) {
-    const temp = (typeof s.temperature_c === "number")
-      ? s.temperature_c
-      : (typeof s.temperature === "number" ? s.temperature : "");
-
-    const hum = (typeof s.humidity_percent === "number")
-      ? s.humidity_percent
-      : (typeof s.humidity === "number" ? s.humidity : "");
-
-    const vbat = (typeof s.vbat_v === "number")
-      ? s.vbat_v
-      : (typeof s.vbat === "number" ? s.vbat : "");
-
-    const vsolar = (typeof s.vsolar_v === "number")
-      ? s.vsolar_v
-      : (typeof s.vsolar === "number" ? s.vsolar : "");
-
-    const ldr = (typeof s.ldr_percent === "number")
-      ? s.ldr_percent
-      : (s.ldr !== undefined ? s.ldr : "");
-
-    const pressure = (typeof s.pressure_hpa === "number")
-      ? s.pressure_hpa
-      : (typeof s.pressure === "number" ? s.pressure : "");
+    const temp = pickNumber(s, ["temperature", "temperature_c"]);
+    const hum = pickNumber(s, ["humidity", "humidity_percent"]);
+    const pressure = pickNumber(s, ["pressure_at", "pressure_hpa", "pressure"]);
+    const vbat = pickNumber(s, ["vbat", "vbat_v"]);
+    const vsolar = pickNumber(s, ["vsolar", "vsolar_v"]);
+    const ldr = pickNumber(s, ["ldr", "ldr_percent"]);
 
     const row = [
-      formatTsForCsv(s.timestamp_utc),
-      temp,
-      hum,
-      pressure,
-      vbat,
-      vsolar,
-      ldr,
+      formatTimestamp(s.timestamp_utc),
+      temp ?? "",
+      hum ?? "",
+      pressure ?? "",
+      vbat ?? "",
+      vsolar ?? "",
+      ldr ?? "",
       s.alarm_temp_high ? 1 : 0,
       s.alarm_vbat_high ? 1 : 0,
       s.alarm_vbat_low ? 1 : 0,
@@ -481,11 +348,9 @@ async function fetchData() {
     setConnectionStatus("warn", "Actualizando…");
     const url = `${DATA_URL}?_=${Date.now()}`;
     const response = await fetch(url, { cache: "no-store" });
-
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const raw = await response.json();
-    console.log("RAW data.json:", raw);
 
     let samples = [];
     if (Array.isArray(raw.samples)) samples = raw.samples;
@@ -493,27 +358,6 @@ async function fetchData() {
     else samples = [raw];
 
     if (!samples.length) throw new Error("data.json vacío");
-
-    // Asegurarnos de que cada muestra tiene timestamp_utc calculado si hace falta
-    samples = samples.map((s) => {
-      if (!s) return s;
-      if (
-        !s.timestamp_utc &&
-        typeof s.year === "number" &&
-        typeof s.month === "number" &&
-        typeof s.day === "number"
-      ) {
-        s.timestamp_utc = {
-          year: s.year,
-          month: s.month,
-          day: s.day,
-          hour: s.hour ?? 0,
-          minute: s.minute ?? 0,
-          second: s.second ?? 0,
-        };
-      }
-      return s;
-    });
 
     lastSamples = samples;
 

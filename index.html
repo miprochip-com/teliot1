@@ -8,29 +8,28 @@
 </head>
 
 <body>
- <footer class="footer">
-  <span>Teliot1 · miprochip</span>
-  <span class="dot">•</span>
-  <span>
-    Datos desde Teliot1 - TTN - GitHub — Código Ubicación:MA-AX_4567
-    <a href="https://www.miprochip.com" target="_blank" rel="noopener">
-      www.miprochip.com
-    </a>
-  </span>
-</footer>
+  <footer class="footer">
+    <span>Teliot1 · miprochip</span>
+    <span class="dot">•</span>
+    <span>
+      Datos desde Teliot1 - TTN - GitHub — Código Ubicación:MA-AX_4567
+      <a href="https://www.miprochip.com" target="_blank" rel="noopener">
+        www.miprochip.com
+      </a>
+    </span>
+  </footer>
 
   <div class="header-status">
-      <span id="connection-status" class="badge badge-gray">Estado: esperando datos…</span>
-
-      <button id="refresh-btn" class="btn">Recargar ahora</button>
-
-      <!-- Botón CSV -->
-      <button id="download-csv" class="btn">Descargar CSV</button>
+    <span id="connection-status" class="badge badge-gray">Estado: esperando datos…</span>
+    <button id="refresh-btn" class="btn">Recargar ahora</button>
+    <button id="download-csv" class="btn">Descargar CSV</button>
   </div>
 
   <main class="main">
+    <div style="text-align:center; margin-bottom:20px;">
+      <img src="TELIOT1.jpg" alt="Teliot1" style="max-width:300px; height:auto;" />
+    </div>
 
-    <!-- Panel principal -->
     <section class="card">
       <h2>Medidas actuales</h2>
 
@@ -56,25 +55,20 @@
         </div>
 
         <div class="metric">
-          <div class="metric-label">Luz (LDR)</div>
-          <div class="metric-value"><span id="ldr">--</span></div>
+          <div class="metric-label">Luz (Lum%)</div>
+          <div class="metric-value"><span id="ldr">--</span><span class="metric-unit">%</span></div>
         </div>
 
-        <!-- NUEVA MÉTRICA: Presión -->
         <div class="metric">
           <div class="metric-label">Presión atmosférica</div>
-          <div class="metric-value">
-            <span id="pressure">--</span><span class="metric-unit">hPa</span>
-          </div>
+          <div class="metric-value"><span id="pressure">--</span><span class="metric-unit">hPa</span></div>
         </div>
       </div>
     </section>
 
-    <!-- Alarmas -->
     <section class="card">
       <h2>Alarmas</h2>
       <div class="grid grid-4">
-
         <div class="alarm-item" id="alarm_temp_high">
           <div class="alarm-label">Temperatura alta</div>
           <span class="badge badge-gray">Sin datos</span>
@@ -95,7 +89,6 @@
           <span class="badge badge-gray">Sin datos</span>
         </div>
 
-        <!-- NUEVA ALARMA: Presión baja -->
         <div class="alarm-item" id="alarm_pressure_low">
           <div class="alarm-label">Presión baja</div>
           <span class="badge badge-gray">Sin datos</span>
@@ -103,12 +96,11 @@
       </div>
     </section>
 
-    <!-- Timestamps -->
     <section class="card">
       <h2>Información de muestra</h2>
       <div class="info-row">
         <div>
-          <div class="info-label">Timestamp UTC del nodo</div>
+          <div class="info-label">Timestamp (hora local)</div>
           <div id="timestamp-utc" class="info-value">--</div>
         </div>
         <div>
@@ -118,13 +110,11 @@
       </div>
     </section>
 
-    <!-- Log -->
     <section class="card">
       <h2>Log de eventos</h2>
       <div id="log" class="log"></div>
     </section>
 
-    <!-- Gráficas -->
     <section class="card">
       <h2>Histórico de temperatura y humedad</h2>
       <div class="chart-wrapper">
@@ -139,14 +129,12 @@
       </div>
     </section>
 
-    <!-- NUEVA GRÁFICA: presión -->
     <section class="card">
       <h2>Histórico de presión atmosférica</h2>
       <div class="chart-wrapper">
         <canvas id="chart-pressure"></canvas>
       </div>
     </section>
-
   </main>
 
   <footer class="footer">
