@@ -3656,6 +3656,40 @@
       "minute": 6,
       "second": 31,
       "timestamp_iso": "2025-12-30T03:06:31.000Z"
+    },
+    {
+      "device_id": "miprochipteliot1",
+      "temperature": 7.49,
+      "humidity": 81.15,
+      "pressure_at": 1017,
+      "vbat": 3.491,
+      "vsolar": 0,
+      "ldr": 0,
+      "temperature_c": 7.49,
+      "humidity_percent": 81.15,
+      "vbat_v": 3.491,
+      "vsolar_v": 0,
+      "ldr_percent": 0,
+      "alarm_temp_high": false,
+      "alarm_vbat_high": false,
+      "alarm_vbat_low": true,
+      "alarm_vsolar_low": true,
+      "alarm_pressure_low": false,
+      "timestamp_utc": {
+        "year": 2025,
+        "month": 12,
+        "day": 30,
+        "hour": 5,
+        "minute": 5,
+        "second": 51
+      },
+      "year": 2025,
+      "month": 12,
+      "day": 30,
+      "hour": 5,
+      "minute": 5,
+      "second": 51,
+      "timestamp_iso": "2025-12-30T04:05:51.000Z"
     }
   ]
 }
