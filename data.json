@@ -18650,6 +18650,40 @@
       "minute": 4,
       "second": 55,
       "timestamp_iso": "2026-01-17T19:04:55.000Z"
+    },
+    {
+      "device_id": "miprochipteliot1",
+      "temperature": 10.04,
+      "humidity": 59,
+      "pressure_at": 1006.7,
+      "vbat": 3.531,
+      "vsolar": 0,
+      "ldr": 0,
+      "temperature_c": 10.04,
+      "humidity_percent": 59,
+      "vbat_v": 3.531,
+      "vsolar_v": 0,
+      "ldr_percent": 0,
+      "alarm_temp_high": false,
+      "alarm_vbat_high": false,
+      "alarm_vbat_low": false,
+      "alarm_vsolar_low": true,
+      "alarm_pressure_low": false,
+      "timestamp_utc": {
+        "year": 2026,
+        "month": 1,
+        "day": 17,
+        "hour": 21,
+        "minute": 4,
+        "second": 15
+      },
+      "year": 2026,
+      "month": 1,
+      "day": 17,
+      "hour": 21,
+      "minute": 4,
+      "second": 15,
+      "timestamp_iso": "2026-01-17T20:04:15.000Z"
     }
   ]
 }
