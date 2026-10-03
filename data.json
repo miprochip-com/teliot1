@@ -2,40 +2,6 @@
   "samples": [
     {
       "device_id": "miprochipteliot1",
-      "temperature": 25.75,
-      "humidity": 65.66,
-      "pressure_at": 1009.9,
-      "vbat": 3.605,
-      "vsolar": 0,
-      "ldr": 0,
-      "temperature_c": 25.75,
-      "humidity_percent": 65.66,
-      "vbat_v": 3.605,
-      "vsolar_v": 0,
-      "ldr_percent": 0,
-      "alarm_temp_high": false,
-      "alarm_vbat_high": false,
-      "alarm_vbat_low": false,
-      "alarm_vsolar_low": true,
-      "alarm_pressure_low": false,
-      "timestamp_utc": {
-        "year": 2026,
-        "month": 8,
-        "day": 21,
-        "hour": 23,
-        "minute": 41,
-        "second": 55
-      },
-      "year": 2026,
-      "month": 8,
-      "day": 21,
-      "hour": 23,
-      "minute": 41,
-      "second": 55,
-      "timestamp_iso": "2026-08-21T21:41:55.000Z"
-    },
-    {
-      "device_id": "miprochipteliot1",
       "temperature": 25.02,
       "humidity": 71.69,
       "pressure_at": 1010.1,
@@ -33999,6 +33965,40 @@
       "minute": 48,
       "second": 49,
       "timestamp_iso": "2026-10-03T16:48:49.000Z"
+    },
+    {
+      "device_id": "miprochipteliot1",
+      "temperature": 26.09,
+      "humidity": 70.4,
+      "pressure_at": 1015.5,
+      "vbat": 3.634,
+      "vsolar": 3.837,
+      "ldr": 60.95,
+      "temperature_c": 26.09,
+      "humidity_percent": 70.4,
+      "vbat_v": 3.634,
+      "vsolar_v": 3.837,
+      "ldr_percent": 60.95,
+      "alarm_temp_high": false,
+      "alarm_vbat_high": false,
+      "alarm_vbat_low": false,
+      "alarm_vsolar_low": false,
+      "alarm_pressure_low": false,
+      "timestamp_utc": {
+        "year": 2026,
+        "month": 10,
+        "day": 3,
+        "hour": 19,
+        "minute": 48,
+        "second": 9
+      },
+      "year": 2026,
+      "month": 10,
+      "day": 3,
+      "hour": 19,
+      "minute": 48,
+      "second": 9,
+      "timestamp_iso": "2026-10-03T17:48:09.000Z"
     }
   ]
 }
